@@ -1,0 +1,28 @@
+version: '3'
+services:
+  db:
+    image: postgres
+  geth:
+    image: ethereum/client-go
+    ports:
+      - "8545:8545"
+      - "30303:30303"
+  bridge:
+    build: ../bridge
+    command: /bridge -port 8555
+    ports:
+      - "8555:8555"
+  web:
+    build: ../web
+    command: bundle exec puma
+    volumes:
+      - ../web:/web
+    ports:
+      - "3000:3000"
+    environment:
+      BRIDGE_HOST: bridge
+      POSTGRES_HOST: db
+    depends_on:
+      - db
+      - geth
+      - bridge
