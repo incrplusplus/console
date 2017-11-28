@@ -1,12 +1,20 @@
 version: '3'
 services:
   db:
-    image: postgres
-  geth:
-    image: ethereum/client-go
+    image: postgres:latest
     ports:
-      - "8545:8545"
+      - '5432:5432'
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+  geth:
+    build: ../geth
+    command: '--networkid 1234567890 --datadir "/root/.ethereum/devchain" --port "30303" --rpc --rpcport "8545" --rpccorsdomain "*" --rpcaddr="0.0.0.0" --rpcapi "admin,db,eth,miner,net,web3,personal,txpool" --nodiscover --mine --minerthreads=2 --etherbase 0'
+    ports:
+      - "8544:8544"
       - "30303:30303"
+      - "30303:30303/udp"
+    volumes:
+      - geth:/root/.ethereum
   bridge:
     build: ../bridge
     command: /bridge -port 8555
@@ -26,3 +34,9 @@ services:
       - db
       - geth
       - bridge
+
+volumes:
+  postgresql-data:
+    driver: local
+  geth:
+    driver: local
